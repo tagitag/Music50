@@ -1,0 +1,263 @@
+{% extends "layout.html" %}
+
+{% block title %}HomePage{% endblock %}
+
+{% block main %}
+    <script>
+        let songlist = {{songList | tojson}};
+        let songHeadings = ["Views" ,"Name", "Length" ];
+        let folderlist = {{folderList| tojson}};
+        let folderHeadings =  ["Name", "Count", "Total Length" ];
+
+        var fs = 1;
+        // switch the headings of the table
+        function switchTableHeadings(table)
+        {
+            table.innerHTML = "";
+            if (fs%2 == 0)
+            {
+                let tr = document.createElement("tr");
+                for (let i = 0; i < songHeadings.length; i++)
+                {
+                    let th = document.createElement("th");
+                    th.innerHTML = songHeadings[i];
+                    tr.appendChild(th);
+                }
+                table.appendChild(tr);
+            }
+            else
+            {
+                let tr = document.createElement("tr");
+                for (let i = 0; i < folderHeadings.length; i++)
+                {
+                    let th = document.createElement("th");
+                    th.innerHTML = folderHeadings[i];
+                    tr.appendChild(th);
+                }
+                table.appendChild(tr);
+            }
+        }
+        // generates the table data
+        function updateTable(table)
+        {
+            // checks if it should be a table for songs or for folders
+            if (fs % 2 == 0)
+            {
+                for (let i = 0; i < songlist.length; i++)
+                {
+                    let tr = document.createElement("tr");
+                    tr.style = "cursor: pointer;";
+                    let id = songlist[i]["id"];
+                    for (let j = 0; j < songHeadings.length; j++)
+                    {
+                        td = document.createElement("td");
+                        td.innerHTML = songlist[i][songHeadings[j].toLowerCase()];
+                        td.innerHTML = td.innerHTML.replace(/-/g,":");
+                        tr.appendChild(td);
+                    }
+                    // if we will be deleteing or simply watching
+                    if (deleteMode)
+                    {
+                        dellerS(tr,id);
+                    }
+                    else
+                    {
+                        adderS(tr,id);
+                    }
+                    table.appendChild(tr);
+                }
+            }
+            else
+            {
+                for (let i = 0; i < folderlist.length; i++)
+                {
+                    let tr = document.createElement("tr");
+                    tr.style = "cursor: pointer;";
+                    let id = folderlist[i]["id"];
+                    for (let j = 0; j < folderHeadings.length; j++)
+                    {
+                        let td = document.createElement("td");
+                        td.innerHTML = folderlist[i][folderHeadings[j].toLowerCase().replace(" ", "_")];
+                        td.innerHTML = td.innerHTML.replace(/-/g,":");
+                        tr.appendChild(td);
+                    }
+                    if (deleteMode)
+                    {
+                        dellerF(tr,id)
+                    }
+                    else
+                    {
+                        adderF(tr,id);
+                    }
+                    table.appendChild(tr);
+                }
+            }
+        }
+        // loads the table, and acts as a switch as well
+        function loadFS(switchtable)
+        {
+            //get table and neccisary form
+            var table = document.getElementById("SF");
+            if (switchtable)
+            {
+                fs++;
+            }
+            switchTableHeadings(table);
+            updateTable(table);
+        }
+
+        // loads in the elements needed for the input, submit and cancle
+        function ask(message, valueName)
+        {
+            let form = document.getElementById("topForm");
+            form.disabled = false;
+            form.style.display = "block";
+
+            let input = document.getElementById("formIn");
+            input.name = valueName;
+            input.placeholder = message;
+
+            let button = document.getElementById("formButton");
+            button.disabled = false;
+            button.style.display = "block";
+
+        }
+        // removes the elements that where added in ask()
+        function del()
+        {
+            let form = document.getElementById("topForm");
+            form.disabled = true;
+            form.style.display = "none";
+
+            let input = document.getElementById("formIn");
+            input.value = "";
+        }
+        window.onload = function () {
+            loadFS(1);
+            del();
+        }
+
+        // adds the path for the song click
+        function adderS(el,id)
+        {
+            el.addEventListener("click", function(event) {
+                let inp = document.getElementById("songInput");
+                inp.value = id;
+                document.getElementById("songForm").submit();
+            }, false);
+        }
+        function adderF(el,id)
+        {
+            el.addEventListener("click", function(event) {
+                let inp = document.getElementById("folderInput");
+                inp.value = id;
+                document.getElementById("folderForm").submit();
+
+            }, false);
+        }
+
+        // adds the delete path to each song in the table
+        function dellerS(el,id)
+        {
+            // sets the enevnt listiner
+            el.addEventListener("click", function(event) {
+                let inp = document.getElementById("delSongInput");
+                inp.value = id;
+                document.getElementById("delFolderForm").submit();
+            }, false);
+            // changes color of the data to make is visible for the user
+            el.classList.add("bg-danger");
+            el.classList.add("p-1");
+            el.classList.add("bg-opacity-25");
+        }
+        function dellerF(el,id)
+        {
+            el.addEventListener("click", function(event) {
+                let inp = document.getElementById("delFolderInput");
+                inp.value = id;
+                document.getElementById("delFolderForm").submit();
+            }, false);
+            // changes color of data
+            el.classList.add("bg-danger");
+            el.classList.add("p-1");
+            el.classList.add("bg-opacity-25");
+        }
+
+        let deleteMode = false;
+        // activates the delete mode
+        function deletemode(e)
+        {
+            let table = document.getElementById("SF");
+            if (!deleteMode)
+            {
+                // change visual of the button
+                e.target.classList.remove("btn-dark");
+                e.target.classList.add("btn-warning");
+                deleteMode = true;
+                loadFS(0);
+            }
+            else
+            {
+                e.target.classList.remove("btn-warning");
+                e.target.classList.add("btn-dark");
+                deleteMode = false;
+                loadFS(0);
+            }
+
+        }
+
+    </script>
+
+    <div>
+
+    </div>
+    <div class="btn-group">
+        <button class="btn btn-dark" onclick="loadFS(1)">Song/Folder</button>
+        <!-- new song, what it wil do after recieving the input, and it being valid. it will reload the page maybe. -->
+        <button class="btn btn-dark" onclick="ask('New Song Url','newSong')">New Song</button>
+        <!-- no need to reload page, i dont think -->
+        <button class="btn btn-dark" onclick="ask('New Folder Name','newFolder')">New Folder</button>
+        <!-- simply updates the db for the connections ngl -->
+        <button class="btn btn-dark"><a style="color:#FFFFFF;" class="text-decoration-none" href="/movetofolder">Add To Folder</a></button>
+        <!-- turns on delete mode, in this mode songs or folders can be deleted whit a click -->
+        <button class="btn btn-dark" onclick="deletemode(event)">Delete Mode</button>
+    </div>
+    <hr style="visibility:hidden">
+    <div class="container">
+        <div class="row justify-content-center gx-0">
+          <div class="container-fluid">
+            <form id="topForm" action="/" method="post" style="">
+                <div class="container-fluid col-xl-6">
+                    <div class="row g-0">
+                        <div class="container col-md-4">
+                            <input class="form-control" id="formIn" type="text" autocomplete="off">
+                        </div>
+                        <div class="btn-group col">
+                            <button type="submit" class="btn btn-dark">Submit</button>
+                            <button type="button" onclick="del()" class="btn btn-dark">Cancle</button>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+      </div>
+    <divc class="center">
+        <div class="table">
+            <table id="SF" class="table table-hover table-striped" >
+            </table>
+        </div>
+    </div>
+    <div>
+        <!-- these are the paths used to send data, they are hidden from the user -->
+        <form action="/play" method="GET" id="songForm"style="display:none" >
+            <input id="songInput" name="Sid" value="">
+        </form>
+        <form action="/play" method="POST" id="folderForm"style="display:none">
+            <input id="folderInput" name="folder" value="">
+        </form>
+        <form action="/delete" method="POST" id="delFolderForm"style="display:none">
+            <input id="delSongInput" name="Did" value="">
+            <input id="delFolderInput" name="delFolder" value="">
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block title %}Change{% endblock %}
+
+{% block main %}
+    <form action="/change" method="post">
+        <div class="mb-3">
+            <input required class="form-control mx-auto w-auto" id="password" name="password" placeholder="New Password" type="password">
+        </div>
+        <div class="mb-3">
+            <input required class="form-control mx-auto w-auto" id="confirmation" name="confirmation" placeholder="Confirm Password" type="password">
+        </div>
+        <button class="btn btn-success"  type="submit">Change Pasword</button>
+    </form>
+{% endblock %}

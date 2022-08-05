@@ -1,0 +1,100 @@
+{% extends "layout.html" %}
+
+{% block title %}Music{% endblock %}
+
+{% block main %}
+<script src="/static/videoJava.js"></script>
+<script>
+    {% if musicList %} // post method
+        let musiclist = {{musicList|tojson}} //if there aint music then nothing will happen
+    {% else %} //get methog basically
+        let musiclist = [];
+    {% endif %}
+
+
+</script>
+
+<!-- code gooten from the youtube api docs -->
+<div id="videoplayer" class="ratio ratio-16x9">
+    <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+    <div id="player"></div>
+
+    <script>
+        // 2. This code loads the IFrame Player API code asynchronously.
+        var tag = document.createElement('script');
+
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // 3. This function creates an <iframe> (and YouTube player)
+        //    after the API code downloads.
+        var player;
+        function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            videoId: '{{currentSong}}', //put in current song here
+            playerVars: {
+            'playsinline': 1
+            },
+            events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+            }
+        });
+        }
+
+        // 4. The API will call this function when the video player is ready.
+        function onPlayerReady(event) {
+        event.target.playVideo();
+        }
+
+        //when the player state changes, check if the video is over then print Done
+        function onPlayerStateChange(event) {
+        if (event.data == YT.PlayerState.ENDED) {
+            if (loopCurrent)
+            {
+                event.target.playVideo();
+            }
+            else
+            {
+                Next();
+                if (!stoplist)
+                {
+                    event.target.loadVideoById(currentSong);
+                    event.target.playVideo();
+                }
+                else
+                {
+                    alert("list Done");
+                }
+            }
+        }
+        }
+    </script>
+</div>
+
+{% if musicList %}
+<div class=" btn-group container-fluid" role="group">
+    <button type="button" class="btn btn-info btn-lg" style="" id="NextButton"><img src="/static/right-arrow.svg"> Next </button>
+    <button type="button" class="btn btn-info btn-lg" id="LastButton"><img src="/static/left-arrow.svg"> Last </button>
+    <button type="button" class="btn btn-info btn-lg" id="LoopCurrentButton">Loop Current <img src="/static/arrow-counterclockwise.svg"></button>
+    <button type="button" class="btn btn-info btn-lg" id="LoopListButton">Loop List <img src="/static/arrow-counterclockwise.svg"></button>
+</div>
+
+{% endif %}
+<div id="songs" class="table table-responsive container-fluid">
+    <table class="table" id="songstable">
+        <tr>
+            <th>
+                #
+            </th>
+            <th>
+                Name
+            </th>
+            <th>
+                Lenght
+            </th>
+        </tr>
+    </table>
+</div>
+{% endblock %}

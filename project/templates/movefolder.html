@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block title %}Move TO Folder{% endblock %}
+
+{% block main %}
+
+<script>
+    //update the color of the name that was clicked
+    function updateDiv(e,tar)
+    {
+
+        let check = tar.querySelectorAll('input[type="checkbox"]')[0];
+        if (check.checked)
+        {
+            tar.classList.add("bg-success");
+            tar.classList.add("p-1");
+            tar.classList.add("bg-opacity-25");
+        }
+        else
+        {
+            tar.classList.remove("bg-success");
+            tar.classList.remove("p-1");
+            tar.classList.remove("bg-opacity-25");
+        }
+
+
+    }
+    // adds event listeners too every element in the table
+    function setTableUI()
+    {
+        divs = document.querySelectorAll('[id^="tableDiv"]');
+        for ( let div of divs)
+        {
+            div.addEventListener("click",function(event) {updateDiv(event,div)} ,false);
+        }
+    }
+
+    window.onload = function () {
+        setTableUI();
+    }
+
+</script>
+
+<form action="/" method="POST">
+    <div class="row g-0 justify-content-md-center">
+        <div class="col">
+            <select required class="form-select" name="selectedfolder" aria-label="Default select example" required>
+                <option selected disabled value="" >Select A Folder</option>
+                {% for folder in folderList %}
+                    <option value="{{folder.name}}">{{folder.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col">
+            <button class="form-control btn btn-dark" onclick="">Submit</button>
+        </div>
+        <div class="col">
+            <input type="button" class="form-control btn btn-dark" value="Cancle" onclick="location.href='/'" id="cancle">
+        </div>
+    </div>
+    <div class="row row-cols-1 gy-2">
+        {% for song in songList %}
+        <div id="tableDiv" class="col form-check">
+            <input class="form-check-input" name="songCheckBox" type="checkbox" value="{{song.id}}" id="{{song.id}}">
+            <label class="form-check-label" onclick="" for="{{song.id}}">{{song.name}}</label>
+        </div>
+        {% endfor %}
+    </div>
+</form>
+{% endblock %}
